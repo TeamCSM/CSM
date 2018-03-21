@@ -1,0 +1,200 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csm.mapper.AdminMapper">
+
+<select id="sellStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '12', 1)) dec 
+	FROM csm_market_sellitem_log
+</select>
+
+<select id="priceStatistics" resultType="StatisticsVO">
+SELECT 
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '01' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '01' THEN item_price END) end jan,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '02' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '02' THEN item_price END) end feb,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '03' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '03' THEN item_price END) end mar,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '04' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '04' THEN item_price END) end apr,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '05' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '05' THEN item_price END) end may,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '06' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '06' THEN item_price END) end jun,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '07' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '07' THEN item_price END) end jul,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '08' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '08' THEN item_price END) end aug,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '09' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '09' THEN item_price END) end sep,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '10' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '10' THEN item_price END) end oct,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '11' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '11' THEN item_price END) end nov,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '12' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '12' THEN item_price END) end dec
+FROM csm_market_sellitem_log
+</select>
+
+<select id="contrastPriceStatistics" resultType="MonthStatisticsVO">
+	select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.thism - a.lastm) / a.lastm) * 100, 1) result
+from (
+select
+    case when sum(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then item_price end) is null then 0 else sum(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then item_price end) end lastm,
+    sum(case when substr(log_regdate, 4, 2) = substr(sysdate, 4, 2) then item_price end) thism
+from csm_market_sellitem_log ) a) b
+</select>
+
+<select id="contrastSellStatistics" resultType="MonthStatisticsVO">
+select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.this - a.last) / a.last) * 100, 1) result
+from (
+select
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then item_name end) last,
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then item_name end) this
+from csm_market_sellitem_log) a) b
+</select>
+
+<select id="connectionStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '12', 1)) dec 
+	FROM csm_user_log
+	WHERE log_action = 'L'
+</select>
+
+<select id="contrastConnStatistics" resultType="MonthStatisticsVO">
+select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.this - a.last) / a.last) * 100, 1) result
+from (
+select
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then log_action end) last,
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then log_action end) this
+from csm_user_log
+where log_action = 'L') a) b
+</select>
+
+<select id="createStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '12', 1)) dec 
+	FROM csm_user_log
+	WHERE log_action = 'C'
+</select>
+
+<select id="contrastCreateStatistics" resultType="MonthStatisticsVO">
+select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.this - a.last) / a.last) * 100, 1) result
+from (
+select
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then log_action end) last,
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then log_action end) this
+from csm_user_log
+where log_action = 'C') a) b
+</select>
+
+<select id="deleteStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '12', 1)) dec 
+	FROM csm_user_log
+	WHERE log_action = 'D'
+</select>
+
+<select id="contrastDeleteStatistics" resultType="MonthStatisticsVO">
+select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.this - a.last) / a.last) * 100, 1) result
+from (
+select
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then log_action end) last,
+    count(case when to_char(substr(log_regdate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then log_action end) this
+from csm_user_log
+where log_action = 'D') a) b
+</select>
+
+<select id="resumeStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '12', 1)) dec 
+	FROM csm_resume
+</select>
+
+<select id="contrastResumeStatistics" resultType="MonthStatisticsVO">
+select b.*, case when b.result &lt; 0 then '감소' else '증가' end as check_status
+from (
+select a.*, round(((a.this - a.last) / a.last) * 100, 1) result
+from (
+select
+    count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then name end) last,
+    count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then name end) this
+from csm_resume) a) b
+</select>
+
+<select id="joinCount" resultType="UserLogVO">
+	select count(*) as count from csm_user_log where to_char(log_regdate, 'YY/MM/DD') = to_char(sysdate, 'YY/MM/DD') and log_action = 'C'
+</select>
+
+<select id="dailySum" resultType="SellItemLogVO">
+	select 
+    case when sum(item_price) is null then 0 else sum(item_price) end item_price
+from csm_market_sellitem_log where to_char(log_regdate, 'YY/MM/DD') = to_char(sysdate, 'YY/MM/DD')
+</select>
+
+<select id="dailyCount" resultType="UserLogVO">
+	select count(item_price) as count from csm_market_sellitem_log where to_char(log_regdate, 'YY/MM/DD') = to_char(sysdate, 'YY/MM/DD')
+</select>
+
+<select id="dailyResume" resultType="UserLogVO">
+	select count(*) as count from csm_resume where to_char(regidate, 'YY/MM/DD') = to_char(sysdate, 'YY/MM/DD')
+</select>
+
+</mapper>

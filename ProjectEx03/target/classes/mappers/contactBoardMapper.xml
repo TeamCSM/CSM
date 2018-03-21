@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csm.mapper.ContactBoardMapper">
+
+<insert id="create">
+insert into csm_contact_board (
+contact_bno,
+contact_id,
+contact_writer,
+contact_question,
+contact_title,
+contact_content,
+contact_regidate) 
+ values(csm_contact_board_seq.nextval, #{contact_id}, #{contact_writer}, #{contact_question}, #{contact_title}, #{contact_content}, sysdate)
+</insert>
+
+<select id="read" resultType="com.csm.customer.domain.ContactVO">
+select 
+  contact_bno, contact_id, contact_writer, contact_question, contact_title, contact_content, contact_regidate, contact_viewcnt
+ from 
+   csm_contact_board 
+ where contact_bno = #{contact_bno}
+ </select>
+
+ <select id="getChatList" resultType="com.csm.customer.domain.ContactVO">
+SELECT * FROM chat WHERE chatTime > ? ORDER BY chatTime
+ </select>
+
+ <update id="update">
+ update csm_contact_board set contact_title =#{contact_title}, contact_content =#{contact_content} 
+ where contact_bno = #{contact_bno}
+ </update>
+
+ <delete id="delete">
+ delete from csm_contact_board where contact_bno = #{contact_bno}
+ </delete>
+
+ <select id="listAll" resultType="com.csm.customer.domain.ContactVO">
+ <![CDATA[
+ select 
+   contact_bno, contact_title, contact_content, contact_writer, contact_regidate, contact_viewcnt
+ from 
+   csm_contact_board 
+ where contact_bno > 0 
+ order by contact_bno desc, contact_regidate desc
+ ]]>  
+ </select>
+ <select id="listPage" resultType="com.csm.customer.domain.ContactVO">
+<include refid="pagingcrihead"></include>
+select contact_bno, contact_title, contact_content, contact_writer, contact_regidate, contact_viewcnt
+from csm_contact_board
+where contact_bno > 0
+order by contact_bno desc, contact_regidate desc
+<include refid="pagingcrifoot"></include>
+</select>
+
+<select id="listCriteria" resultType="com.csm.customer.domain.ContactVO">
+<include refid="pagingHeader"/>
+select contact_bno, contact_title, contact_content, contact_writer, contact_regidate, contact_viewcnt
+from  csm_contact_board
+where contact_bno > 0 
+order by contact_bno desc, contact_regidate desc
+<include refid="pagingFooter"/>
+ </select>
+<select id="countPaging" resultType="int">
+ <![CDATA[
+ select 
+   count(contact_bno) 
+ from 
+   csm_contact_board 
+ where 
+   contact_bno > 0 
+ ]]>
+</select>
+<sql id="search">
+ <if test="searchType != null" > 
+   <if test="searchType == 't'.toString()">
+     and contact_title like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'c'.toString()">
+     and contact_content like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'w'.toString()">
+     and contact_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>     
+   <if test="searchType == 'tc'.toString()">
+     and contact_title like CONCAT(CONCAT('%', #{keyword}), '%') OR contact_content like CCONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'cw'.toString()">
+     and contact_content like CONCAT(CONCAT('%', #{keyword}), '%') OR contact_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'tcw'.toString()">
+     and contact_title like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             contact_content like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             contact_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>              
+ </if>  
+</sql>
+
+<select id="listSearchCount" resultType="int">
+<![CDATA[
+select
+   count(contact_bno)
+from
+   csm_contact_board
+where contact_bno > 0
+]]>
+<include refid="search"/>
+</select>
+
+<select id="listSearch" resultType="com.csm.customer.domain.ContactVO">
+
+<include refid="pagingHeader"/>
+<![CDATA[
+select contact_bno, contact_title, contact_content, contact_writer, contact_regidate, contact_viewcnt
+     FROM csm_contact_board where 1=1
+]]>
+<include refid="search"/>
+<![CDATA[
+order by contact_bno desc
+]]>
+<include refid="pagingFooter"/>
+</select>
+  <!-- include용 -->
+ <sql id="pagingcrihead">
+	select * from(
+	select A.*,rownum as rn from (
+	</sql>
+	
+	<sql id="pagingcrifoot">
+	) A
+)where rn between #{page} and 10
+</sql>
+<sql id="pagingHeader">
+		select * from(
+		select A.* , rownum as rn
+			from ( 
+	</sql>
+	<sql id="pagingFooter">
+		) A
+)where rn between #{startPage} and #{endPage}
+</sql>
+ 
+ </mapper>

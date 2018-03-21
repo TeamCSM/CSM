@@ -1,0 +1,46 @@
+.all{
+	width: 100%;
+}
+
+h2{
+	text-align: center;
+}
+#noticeTb{
+	width: 75%;
+}
+
+#noticeTb th{
+	background-color : #5b5b5b;
+	padding-top: 1%;
+	padding-bottom: 1%;
+	color: white;
+	width: 5%;
+}
+
+#noticeTb td{
+	padding-top: 0.3%;
+	padding-bottom: 0.3%;
+
+}
+#right{
+	float: right;
+	padding-right: 12.5%;
+}
+
+#center{
+	text-align: center;
+}
+
+#title{
+	padding-left: 1%;
+}
+
+#writer{
+	padding-left: 1%;
+}
+
+#nav_menu{
+	display: inline;
+	padding-left: 1%;
+	padding-right: 1%;
+}

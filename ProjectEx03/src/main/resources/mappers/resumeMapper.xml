@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.csm.mapper.ResumeMapper">
+  	<insert id="create">		  	
+  		insert into csm_resume (name, phonenumber, idx, uno, type, gender, id, mailNumber, streetAddr, detailedAddr, career, award) values
+  		(#{name}, #{phonenumber}, #{idx}, csm_resume_seq.nextval, #{type}, #{gender}, #{id}, #{mailNumber}, #{streetAddr}, #{detailedAddr}, #{career}, #{award})
+  	</insert>
+  	
+  	<select id="read" resultType="ResumeVO">
+  		select * from csm_resume where uno = #{uno}
+  	</select>
+  	
+  	<update id="status">
+  		update csm_resume set status = '읽음' where uno = #{uno}
+  	</update>
+  	
+  	<select id="listAll" resultType="ResumeVO">
+  	<![CDATA[
+  		select
+  			*
+  		from
+  			csm_resume
+  		where idx = #{idx}
+  	]]>
+  	</select>
+  	
+  	<select id="resumeStatistics" resultType="StatisticsVO">
+  	SELECT 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '12', 1)) dec 
+	FROM csm_resume
+	WHERE id = #{id}
+  	</select>
+  	
+  	<select id="readResume" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(regidate, 'MM'), '12', 1)) dec  
+	FROM csm_resume
+	WHERE id = #{id} and status = '읽음'
+  	</select>
+  	
+  	<delete id="delete">
+  		delete from csm_resume where uno = #{uno} 
+  	</delete>
+  	
+  	<update id="accept">
+  		update csm_resume set accept = 1 where uno = #{uno}
+  	</update>
+  	
+  	<select id="contrastStatistics" resultType="MonthStatisticsVO">
+  		select
+    		count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then idx end) lastm,
+    		count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then idx end) thism
+		from csm_resume where id = #{id}
+  	</select>
+  	
+  	<select id="contrastReadStatistics" resultType="MonthStatisticsVO">
+  		select
+    		count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2)-1, '00') then idx end) lastm,
+    		count(case when to_char(substr(regidate, 4, 2), '00') = to_char(substr(sysdate, 4, 2), '00') then idx end) thism
+		from csm_resume where id = #{id} and status = '읽음'
+  	</select>
+  </mapper>

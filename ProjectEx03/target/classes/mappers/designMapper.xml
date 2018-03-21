@@ -1,0 +1,94 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+  <mapper namespace="com.csm.mapper.DesignMapper">
+  	<insert id="create">		  	
+  		insert into csm_design (idx, id, title, contents, dmax, selectDate) values
+  		(csm_design_seq.nextval,#{id},#{title},#{contents},#{dmax}, sysdate+#{selectnum})
+  	</insert>
+  	
+  	<select id="read" resultType="DesignVO">
+  		select
+  			idx, id, title, contents, regidate, viewcnt, type, dmax, currentnum
+  		from
+  			csm_design
+  		where idx = #{idx}
+  	</select>
+  	
+  	<update id="update">
+  		update csm_design set title=#{title}, contents=#{contents}, dmax = #{dmax}
+  		where idx = #{idx}
+  	</update>
+  	
+  	<delete id="delete">
+  		delete from csm_design where idx = #{idx}
+  	</delete>
+  	
+  	<select id="listAll" resultType="DesignVO">
+  	<include refid="pagingHeader" />
+  	<![CDATA[
+  		SELECT 
+     		TO_NUMBER(SUBSTR (DIFF, 2, 9)) || '일 ' || SUBSTR (DIFF, 12, 2) || '시간 ' || SUBSTR (DIFF, 15, 2) || '분 ' || SUBSTR (DIFF, 18, 2) || '초' AS MAX_TIME,
+     		A.*
+		FROM (
+  		( SELECT
+          IDX, 
+          ID, 
+          TITLE, 
+          CONTENTS, 
+          REGIDATE, 
+          VIEWCNT, 
+          DMAX, 
+          CURRENTNUM, 
+          SELECTDATE,
+          ROWNUM,
+          TO_CHAR(SYSDATE, 'yyyymmddhh24miss') TIME1,
+          TO_CHAR(REGIDATE, 'yyyymmddhh24miss') TIME2,
+          (SELECT NUMTODSINTERVAL(SELECTDATE - SYSDATE, 'day') 
+           FROM DUAL) DIFF,
+           CASE WHEN  (SELECTDATE - SYSDATE ) <= 0 THEN '마감' ELSE '진행' END AS CHECK_TIME
+    	FROM
+          CSM_DESIGN
+    	ORDER BY IDX DESC, REGIDATE DESC) A
+		)
+  	]]>
+  	<include refid="pagingFooter" />
+  	</select>
+  	
+  	<select id="listCriteria" resultType="DesignVO">
+	<include refid="pagingHeader" />
+		SELECT rownum, idx, id, title, contents, regidate, viewcnt
+		FROM csm_design ORDER by idx DESC
+	<include refid="pagingFooter" />
+	</select>
+
+	<select id="countPaging" resultType="int">
+	<![CDATA[
+	select
+		count(idx)
+	from
+		csm_design
+	where idx > 0
+	]]>
+	</select>
+	
+	<sql id="pagingHeader">
+        SELECT * FROM (
+            SELECT ROWNUM AS rn, A.* FROM (
+    </sql>
+    <sql id="pagingFooter">
+            ) A
+        ) WHERE rn BETWEEN #{start} AND #{end}
+    </sql>
+    
+    <update id="updateViewCnt">
+    	update csm_design set viewcnt = viewcnt + 1 where idx = #{idx}
+    </update>
+    
+    <update id="dUpdate">
+    	update csm_design set currentnum = currentnum + 1 where idx = #{idx}
+    </update>
+  </mapper>

@@ -1,0 +1,91 @@
+/* common styles !!!YOU DON'T NEED THEM */
+body .container {
+  width: 850px;
+  margin: 70px auto 0px auto;
+  
+}
+body .container h1 {
+  font-family: 'Droid Serif', serif;
+  font-weight: 400;
+  font-style: normal;
+  font-size: 30px;
+  margin-bottom: 30px;
+}
+body .container h1 span {
+  font-weight: 700;
+  font-style: italic;
+  color: #D90368;
+  border-bottom: 2px dashed currentColor;
+}
+body .container .button-effect3 {
+  margin: 70px auto 0px auto;
+  text-align: center;
+}
+body .container .button-effect {
+  float: right;
+  
+}
+body .container .button-effect h2 {
+  font-family: 'Droid Serif', serif;
+  font-size: 20px;
+}
+body .container .button-effect a {
+
+  background-color: #ddd817;
+}
+button{
+	color: #ddd817;
+}
+.effect {
+  text-align: center;
+  
+  margin-left:100px;
+  display: inline-block;
+  position: absolute;
+  text-decoration: none;
+  color: #fff;
+  text-transform: capitalize;
+  /* background-color: - add your own background-color */
+  font-family: 'Roboto', sans-serif;
+  /* put your font-family */
+  font-size: 18px;
+  padding: 10px 0px;
+  width: 100px;
+  border-radius: 6px;
+  overflow: hidden;
+}
+/* effect-3 styles */
+.effect.effect-3 {
+  -webkit-transition: all 0.2s linear 0s;
+  transition: all 0.2s linear 0s;
+}
+.effect.effect-3:before {
+  content: "\f178";
+  font-family: FontAwesome;
+  position: absolute;
+  display: -webkit-box;
+  display: -ms-flexbox;
+  display: inline;
+  -webkit-box-align: center;
+      -ms-flex-align: center;
+          align-items: center;
+  -webkit-box-pack: center;
+      -ms-flex-pack: center;
+          justify-content: center;
+  position: absolute;
+  top: 100%;
+  left: 0px;
+  width: 100%;
+  height: 100%;
+  text-align: center;
+  font-size: 30px;
+  -webkit-transition: all 0.2s linear 0s;
+  transition: all 0.2s linear 0s;
+}
+.effect.effect-3:hover {
+  text-indent: -9999px;
+}
+.effect.effect-3:hover:before {
+  top: 0;
+  text-indent: 0;
+}

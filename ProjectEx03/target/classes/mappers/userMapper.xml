@@ -1,0 +1,234 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.UserMapper">
+
+<!-- 회원가입 -->
+
+<insert id="createBase">
+	insert into csm_user_baseinfo 
+	(user_id, user_pass, user_name, user_gender, user_birthday, user_email, user_phone, 
+	user_mailNumber, user_streetAddr, user_detailedAddr, user_termsService, user_termsPrivacy
+	
+	<if test="user_termsLocation != ''">
+	, user_termsLocation
+	</if>
+	<if test="user_termsEmail != ''">
+	, user_termsEmail
+	</if>
+	) values (#{user_id}, #{user_pass}, #{user_name}, #{user_gender}, #{user_birthday}, #{user_email}, 
+	#{user_phone}, #{user_mailNumber}, #{user_streetAddr}, #{user_detailedAddr}, #{user_termsService}, 
+	#{user_termsPrivacy}
+	<if test="user_termsLocation != ''">
+	, #{user_termsLocation}
+	</if>
+	<if test="user_termsEmail != ''">
+	, #{user_termsEmail}
+	</if>
+	 )
+</insert>
+
+<!-- 로그인 -->
+
+<select id="login" resultType="LoginDTO">
+	select * from 
+		csm_user_baseinfo where user_id = #{user_id} and user_pass = #{user_pass}
+</select>
+
+<update id="keepLogin">
+	update csm_user_baseinfo set user_sessionkey = #{sessionId}, user_sessionlimit = #{next} where user_id = #{user_id}
+</update>
+
+<select id="checkUserWithSessionKey" resultType="LoginDTO">
+	select * from  csm_user_baseinfo where user_sessionkey = #{value} and user_sessionlimit > sysdate
+</select>
+
+<!-- 아이디 찾기 -->
+<select id="idEmailFind" resultType="UserVO">
+	select concat(substr(user_id, 1, 4), '****') as user_id, user_regdate from csm_user_baseinfo 
+	where user_name=#{user_name} and user_email=#{user_email}
+</select>
+
+<select id="birthdayFind" resultType="UserVO">
+	select concat(substr(user_id, 1, 4), '****') as user_id, user_regdate from csm_user_baseinfo 
+	where user_name=#{user_name} and user_gender=#{user_gender} and user_birthday=#{user_birthday}
+</select>
+
+<select id="realIdEmailFind" resultType="UserVO">
+	select user_id, user_regdate from csm_user_baseinfo 
+	where user_name=#{user_name} and user_email=#{user_email}
+</select>
+
+<select id="realIdbirthdayFind" resultType="UserVO">
+	select user_id, user_regdate from csm_user_baseinfo 
+	where user_name=#{user_name} and user_gender=#{user_gender} and user_birthday=#{user_birthday}
+</select>
+
+<select id="passFindConfirm" resultType="UserVO">
+	select user_id, concat(substr(user_email, 1, 2), '******') || substr(user_email, instr(user_email, '@'), 1)
+|| concat(substr(user_email, instr(user_email, '@')+1, 2), '******') || substr(user_email, instr(user_email, '.'))
+ as user_email from csm_user_baseinfo 
+	where user_id=#{user_id}  
+</select>
+
+<update id="newPassSave">
+	update csm_user_baseinfo set user_pass = #{user_pass} where user_id = #{user_id}
+</update>
+
+<select id="usePassConfirm" resultType="int">
+	select count(*) from 
+		csm_user_baseinfo where user_id = #{user_id} and user_pass = #{user_pass}
+</select>
+
+<!-- 로그 -->
+<insert id="logInsert">
+	insert into csm_user_log (log_idx, user_id, log_action) values (csm_user_log_seq.nextval, #{user_id}, #{log_action})
+</insert>
+
+<!-- 마이페이지 -->
+
+<select id="userInfo" resultType="UserVO">
+	select * from
+		csm_user_baseinfo where user_id = #{user_id}
+</select>
+
+<update id="modify">
+	update csm_user_baseinfo
+		set user_name = #{user_name}, user_gender = #{user_gender}, user_birthday = #{user_birthday}, user_phone = #{user_phone},
+			user_mailNumber = #{user_mailNumber}, user_streetAddr = #{user_streetAddr}, user_detailedAddr = #{user_detailedAddr}
+		where user_id = #{user_id}
+</update>
+
+<select id="passwordCheck" resultType="UserVO">
+	select * from
+		csm_user_baseinfo where user_pass = #{user_pass} and user_id = #{user_id}
+</select>
+
+<update id="passModify">
+	update csm_user_baseinfo
+		set user_pass = #{user_newPass}
+		where user_pass = #{user_pass} and user_id = #{user_id}
+</update>
+
+<delete id="delete">
+	delete from csm_user_baseinfo where user_id = #{user_id}
+</delete>
+
+<update id="pointPayment">
+	update csm_user_baseinfo set user_point = user_point + #{user_point} where user_id = #{user_id}
+</update>
+
+<update id="pointWithdraw">
+	update csm_user_baseinfo set user_point = user_point - #{user_point} where user_id = #{user_id}
+</update>
+
+<select id="sellStatistics" resultType="StatisticsVO">
+	SELECT 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '01', 1)) jan,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '02', 1)) feb,
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '03', 1)) mar, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '04', 1)) apr, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '05', 1)) may, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '06', 1)) jun, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '07', 1)) jul, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '08', 1)) aug, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '09', 1)) sep, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '10', 1)) oct, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '11', 1)) nov, 
+		COUNT(DECODE(TO_CHAR(log_regdate, 'MM'), '12', 1)) dec 
+	FROM csm_market_sellitem_log
+	WHERE item_sellerId = #{item_sellerId}
+</select>
+
+<select id="priceStatistics" resultType="StatisticsVO">
+SELECT 
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '01' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '01' THEN item_price END) end jan,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '02' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '02' THEN item_price END) end feb,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '03' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '03' THEN item_price END) end mar,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '04' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '04' THEN item_price END) end apr,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '05' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '05' THEN item_price END) end may,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '06' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '06' THEN item_price END) end jun,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '07' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '07' THEN item_price END) end jul,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '08' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '08' THEN item_price END) end aug,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '09' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '09' THEN item_price END) end sep,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '10' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '10' THEN item_price END) end oct,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '11' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '11' THEN item_price END) end nov,
+    CASE WHEN SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '12' THEN item_price END) is null then 0  else SUM(CASE WHEN SUBSTR(log_regdate,4,2) = '12' THEN item_price END) end dec
+FROM csm_market_sellitem_log
+WHERE item_sellerid = #{item_sellerId}
+</select>
+
+<select id="buyList" resultType="SellItemLogVO">
+	select * from (select * from csm_market_sellitem_log where user_id = #{user_id} order by log_idx desc, rownum) where rownum <![CDATA[ <= ]]> 5
+</select>
+
+<select id="itemInquiry" resultType="InquiryVO">
+	select * from csm_market_iteminquiry where user_id = #{user_id}
+</select>
+
+<select id="itemReview" resultType="ReviewVO">
+	select * from csm_market_itemreview where user_id = #{user_id}
+</select>
+
+<!-- 유저 목록 -->
+<select id="userList" resultType="UserVO">
+SELECT 
+	user_id, 
+	user_name , 
+	user_gender ,
+	user_birthday ,
+	user_email ,
+	user_phone ,
+	user_mailNumber,
+	user_streetAddr,
+	user_detailedAddr,
+	user_termsService,
+	user_termsPrivacy ,
+	user_termsLocation ,
+	user_termsEmail ,
+	user_regdate ,
+	user_authority ,
+	user_point
+FROM 
+	 csm_user_baseinfo 
+</select>
+
+<select id="userDetail" resultType="UserVO">
+	select * from csm_user_baseinfo
+	where
+	user_id = #{user_id}
+</select>
+	
+<delete id="deleteUser">
+	delete from csm_user_baseinfo 
+	where user_id = #{user_id}
+</delete>
+
+<select id="messageCheck" resultType="UserLogVO">
+	select count(*) as count from csm_message where receiverid = #{user_id} and receiverChecks = 0
+</select>
+
+<!-- 어드민쪽 -->
+
+<update id="changeSeller">
+update csm_user_baseinfo
+set 
+    USER_AUTHORITY ='SELLOR'
+    where user_id = #{user_id}
+</update>
+
+<update id="changeUser">
+update csm_user_baseinfo
+set 
+    USER_AUTHORITY ='USER'
+    where user_id = #{user_id}
+</update>
+
+<select id="reqAuthority" resultType="UserLogVO">
+	select * from csm_user_log
+	where
+	log_action = 'SC'
+</select>
+</mapper>

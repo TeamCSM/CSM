@@ -1,0 +1,29 @@
+@charset "utf-8";
+/* Adddon Button */
+.cameron_plugin{position:fixed; width:40px; z-index:9999999}
+.cameron_plugin ul{margin:0; padding:0; list-style:none}
+.cameron_plugin li{position:relative; margin:0 0 1px 0; padding:0}
+.cameron_plugin li a,
+.cameron_plugin li a>*{text-decoration:none; -webkit-transition:background-color .1s ease, border .1s ease, color .1s ease; -moz-transition:background-color .1s ease, border .1s ease, color .1s ease; -ms-transition:background-color .1s ease, border .1s ease, color .1s ease; -o-transition:background-color .1s ease, border .1s ease, color .1s ease; transition:background-color .1s ease, border .1s ease, color .1s ease}
+.cameron_plugin li a:hover{text-decoration:none}
+.cameron_plugin li a.icon{display:block; width:40px; height:40px; background-repeat:no-repeat; background-position:center; text-align:center; color:#e7e7e7; line-height:40px; font-family:Tahoma,돋움; font-size:17px; outline:none}
+.cameron_plugin li a.cameron-facebook{background-color:#4867b2; background-image:url(../img/fb.png)}
+.cameron_plugin li a.cameron-twitter{background-color:#65bdf3; background-image:url(../img/tw.png)}
+.cameron_plugin li a.cameron-rss{background-color:#ff8c26; background-image:url(../img/rss.png)}
+.cameron_plugin li a.cameron-user{background-image:url(../img/user.png)}
+.cameron_plugin li a.langToggle{background-color:#666}
+.cameron_plugin li a:hover,
+.cameron_plugin li a:focus{background-color:#333 !important}
+
+/* Language Select */
+#cameron-lang ul{display:none; position:absolute; top:0; width:100px}
+#cameron-lang li{margin:0}
+#cameron-lang li a{display:block; padding:8px 16px; background:#fdfdfd; border-right:1px solid #e1e1e1; border-left:1px solid #e1e1e1; line-height:1.2; font-size:12px; color:#666; white-space:nowrap; cursor:pointer; outline:none}
+#cameron-lang li:first-child a{border-top:1px solid #e1e1e1}
+#cameron-lang li:last-child a{border-bottom:1px solid #e1e1e1}
+#cameron-lang li a:focus,
+#cameron-lang li a:hover{background-color:#909090 !important; border-right:1px solid #909090; border-left:1px solid #909090; color:#fff}
+#cameron-lang li:first-child a:focus,
+#cameron-lang li:first-child a:hover{border-top:1px solid #909090}
+#cameron-lang li:last-child a:focus,
+#cameron-lang li:last-child a:hover{border-bottom:1px solid #909090}

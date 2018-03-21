@@ -1,0 +1,230 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.MarketMapper">
+
+<!-- 아이템 관련 -->
+
+<insert id="itemRegister">
+	insert into csm_market_itemInfo 
+	(item_idx, item_title, item_name, item_price, item_sail, item_amount, item_enddate, 
+	item_contents, item_area, item_sellerId, item_sellerName, item_saleType, item_minPrice)
+	values (csm_market_itemInfo_seq.nextval, #{item_title}, #{item_name}, #{item_price}, #{item_sail},
+	#{item_amount}, #{item_enddate}, #{item_contents}, #{item_area}, #{item_sellerId},
+	#{item_sellerName}, #{item_saleType}, #{item_minPrice})
+</insert>
+
+<insert id="addItemImgFile">
+	insert into csm_market_subInfo (item_idx, item_photoName) values (csm_market_itemInfo_seq.currval, #{fullName})
+</insert>
+
+
+<select id="listBaseInfo" resultType="ItemVO">
+	<choose>
+		<when test="area != ''">
+			select * from csm_market_itemInfo where item_area = #{area}
+		</when>
+		<otherwise>
+			select * from csm_market_itemInfo where item_sellerId = #{user_id}
+		</otherwise>
+	</choose>
+</select>
+
+<select id="listSubInfo" resultType="ItemVO">
+	select * from csm_market_subInfo where 
+	item_idx in(select item_idx from csm_market_itemInfo where item_area = #{area}) 
+	order by ITEM_REGDATE
+</select>
+
+<select id="readBaseInfo" resultType="ItemVO">
+	select * from csm_market_itemInfo where item_idx = #{item_idx}
+</select>
+
+<select id="readSubInfo" resultType="ItemVO">
+	select * from csm_market_subInfo where item_idx = (
+		select item_idx from csm_market_itemInfo where item_idx = #{item_idx}
+		) order by ITEM_REGDATE
+</select>
+
+<delete id="itemDelete">
+	delete from csm_market_itemInfo where item_idx = #{item_idx}
+</delete>
+
+<select id="getItemPhoto" resultType="string">
+	select item_photoName from csm_market_subInfo where item_idx = #{item_idx}
+</select>
+
+<delete id="subItemDelete">
+	delete from csm_market_subInfo where item_photoName = #{fileName}
+</delete>
+
+<update id="itemBaseModify">
+	update csm_market_itemInfo set item_title=#{item_title}, item_name=#{item_name}, 
+	item_price=#{item_price}, item_sail=#{item_sail}, item_amount=#{item_amount}, 
+	item_contents=#{item_contents}, item_area=#{item_area}, item_saleType=#{item_saleType}, 
+	item_enddate=#{item_enddate}, item_minPrice=#{item_minPrice} 
+	where item_idx = #{item_idx}
+</update>
+
+<update id="itemAmountModify">
+	update csm_market_itemInfo set item_amount= (item_amount-#{item_amount}) where item_idx = #{item_idx}
+</update>
+
+<insert id="sellItemLogInsert">
+	insert into csm_market_sellItem_log (log_idx, item_idx, item_name, item_price, item_amount, item_sellerId,
+	 item_photoName, user_id) values (csm_market_sellItem_log_seq.nextval, #{item_idx}, #{item_name},
+	 #{item_price}, #{item_amount}, #{item_sellerId}, #{item_photoName}, #{user_id})
+</insert>
+
+<!-- 아이템 리뷰 관련 -->
+
+<insert id="itemReviewRegister">
+	insert into csm_market_itemReview (item_idx, review_idx, review_title, review_contents, review_score, user_id)
+	values (#{item_idx}, csm_market_itemReview_seq.nextval,
+	 #{review_title}, #{review_contents}, #{review_score}, #{user_id})
+</insert>
+
+<select id="itemReviewList" resultType="ReviewVO">
+	select * from csm_market_itemReview where item_idx = #{item_idx}
+</select>
+
+
+<!-- 상품 문의 관련 -->
+<insert id="itemInquiryRegister">
+	insert into csm_market_itemInquiry (item_idx, inquiry_idx, inquiry_title, inquiry_contents, inquiry_secret, 
+	inquiry_email, inquiry_type, user_id)
+	values (#{item_idx}, csm_market_itemInquiry_seq.nextval, #{inquiry_title}, #{inquiry_contents}, #{inquiry_secret},
+	#{inquiry_email}, #{inquiry_type}, #{user_id})  
+</insert>
+
+<select id="itemInquriyList" resultType="InquiryVO">
+	select * from csm_market_itemInquiry where item_idx = #{item_idx} and inquiry_secret = #{inquiry_secret}
+</select>
+
+<!-- 장바구니 관련 -->
+
+<insert id="cartInsert">
+	insert into csm_market_cart 
+	(item_idx, item_title, item_name, item_price, item_sail, item_amount, 
+	<if test="item_photoName != ''">
+	item_photoName,
+	</if>
+	 user_id, item_sellerId, item_sellerName)
+	values (#{item_idx}, #{item_title}, #{item_name}, #{item_price}, #{item_sail},
+	#{item_amount}, 
+	<if test="item_photoName != ''">
+	#{item_photoName},
+	</if>
+	 #{user_id}, #{item_sellerId}, #{item_sellerName})
+</insert>
+
+<select id="cartRead" resultType="CartVO">
+	select * from csm_market_cart where user_id = #{user_id}
+</select>
+
+<delete id="cartDelete">
+	delete from csm_market_cart where user_id = #{user_id} and item_idx = #{item_idx}
+</delete>
+
+<delete id="cartClean">
+	delete from csm_market_cart where user_id = #{user_id}
+</delete>
+	
+<select id="cartOverlap" resultType="int">
+	select count(*) from csm_market_cart where user_id = #{user_id} and item_idx = #{item_idx}
+</select>
+
+<update id="cartAmountChange">
+	update csm_market_cart set item_amount = #{item_amount} where item_idx = #{item_idx} and user_id = #{user_id}
+</update>
+
+<select id="checkdCartRead" resultType="CartVO">
+	select * from csm_market_cart where user_id = #{user_id} and item_idx = #{item_idx}
+</select>
+
+<!-- 배송지 관련 -->
+<update id="saveAddrUpdate">
+	update csm_user_saveAddr set user_name = #{user_name}, user_phone = #{user_phone}, user_mailNumber = #{user_mailNumber},
+		user_streetAddr = #{user_streetAddr}, user_detailedAddr = #{user_detailedAddr}, saveAddr_step = #{saveAddr_step}
+	where saveAddr_name = #{saveAddr_name} and user_id = #{user_id}
+</update>
+
+<insert id="saveAddrInsert">
+	insert into csm_user_saveAddr values(#{saveAddr_name}, #{user_id}, #{user_name}, #{user_phone},
+	 #{user_mailNumber}, #{user_streetAddr}, #{user_detailedAddr}, #{saveAddr_step}) 
+</insert>
+
+<select id="saveAddrRead" resultType="SaveAddrVO">
+	select * from csm_user_saveAddr where saveAddr_name = #{saveAddr_name} and user_id = #{user_id}
+</select>
+
+<!-- 오더 관련 -->
+<insert id="orderBaseInfoInsert">
+	insert into csm_market_orderBaseInfo 
+	(order_idx, item_names, item_totalPrice, order_msg, user_id, saveAddr_name)
+	values (#{order_idx}, #{item_names}, #{item_totalPrice}, #{order_msg}, #{user_id}, #{saveAddr_name})
+</insert>
+
+<insert id="orderItemInfoInsert">
+	insert into csm_market_orderItemInfo (order_idx, item_idx, item_title, item_name,
+	 item_price, item_sail, item_priceResult, item_amount, 
+	<if test="vo.item_photoName != ''">
+	item_photoName, 
+	</if>
+	item_sellerId, item_sellerName, user_id) values (#{order_idx}, #{vo.item_idx}, #{vo.item_title},
+	 #{vo.item_name}, #{vo.item_price}, #{vo.item_sail}, #{vo.item_priceResult}, #{vo.item_amount}, 
+	 <if test="vo.item_photoName != ''">
+	 #{vo.item_photoName}, 
+	 </if>
+	 #{vo.item_sellerId}, #{vo.item_sellerName}, #{vo.user_id})
+</insert>
+
+<select id="orderBaseInfoListRead" resultType="OrderVO">
+	select * from csm_market_orderBaseInfo where user_id = #{user_id}
+</select>
+
+<select id="orderItemInfoRead" resultType="CartVO">
+	select * from csm_market_orderItemInfo where 1=1
+	<if test="order_idx != ''">
+		 and order_idx = #{order_idx}
+	</if>
+	<if test="item_sellerId != ''">
+		 and item_sellerId = #{item_sellerId}
+	</if>
+</select>
+
+<select id="orderBaseInfoRead" resultType="OrderVO">
+	select * from csm_market_orderBaseInfo where user_id = #{user_id} and order_idx = #{order_idx}
+</select>
+
+<update id="baseInfoOrderProgressUpdate">
+	update csm_market_orderBaseInfo set order_progress = #{order_progress} where order_idx = #{order_idx}
+</update>
+
+<update id="orderProgressChange">
+	update csm_market_orderItemInfo set order_progress = #{order_progress} where order_idx = #{order_idx}
+</update>
+
+<!-- 마켓 홈 베스트 아이템 관련 -->
+<select id="sellItemLogList" resultType="SellItemLogVO">
+SELECT base.*, selflog.item_photoName FROM csm_market_itemInfo base INNER JOIN 
+(SELECT b.item_idx FROM (
+SELECT item_idx, SUM(item_amount) a FROM csm_market_sellitem_log GROUP BY item_idx ORDER BY A DESC
+) b WHERE rownum <![CDATA[<]]>= 20) log
+ON base.item_idx = log.ITEM_IDX INNER JOIN (
+SELECT DISTINCT item_photoName, item_idx FROM csm_market_sellitem_log WHERE item_idx IN(
+SELECT DISTINCT item_idx FROM csm_market_sellitem_log)
+) selflog ON base.item_idx = selflog.ITEM_IDX WHERE 1=1
+<if test="item_area != ''">
+ AND base.ITEM_area = #{item_area}
+
+</if>
+</select>
+
+<select id="sellList" resultType="SellItemLogVO">
+select * from csm_market_sellitem_log where item_sellerid = #{user_id} and log_action = 'sell'
+</select>
+
+</mapper>

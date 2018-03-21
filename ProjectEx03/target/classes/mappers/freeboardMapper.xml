@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.FreeboardMapper">
+	
+	<insert id="create">
+	insert into csm_freeboard (bno,title,content,writer,github,ip)
+	values (csm_freeboard_seq.NEXTVAL,#{title},#{content},#{writer},#{github},#{ip})
+	</insert>
+	
+	<select id="read" resultType="FreeboardVO">
+	select bno,title,content,writer,regdate,viewcount,github
+	from csm_freeboard where bno=#{bno}
+	</select>
+	
+	<update id="update">
+	update csm_freeboard set title=#{title},content=#{content}
+	where bno=#{bno}
+	</update>
+	
+	<delete id="delete">
+	delete from csm_freeboard where bno=#{bno}
+	</delete>
+	
+	<select id="listPage" resultType="FreeboardVO">
+
+	select * from
+	(select b.*, rownum brnum from 
+	(select A.*, rownum rnum from (select * from csm_freeboard where bno>0 
+
+	<include refid="search"></include>
+
+	order by bno asc,regdate desc)A order by rnum desc)b)
+	where brnum between #{start} and #{end}
+	</select>
+	
+	<select id="listCountPaging" resultType="int">
+	select count(bno) from csm_freeboard where bno>0
+	
+	<include refid="search"></include>
+	
+	</select>
+	
+	
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'title'.toString()">
+			and title like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+			<if test="searchType == 'content'.toString()">
+			and content like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+			<if test="searchType == 'writer'.toString()">
+			and writer like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+		</if>
+	</sql>
+	
+	<update id="UpdateViewCount">
+	update csm_freeboard set viewcount = viewcount+1
+	where bno=#{bno}
+	</update>
+	
+	<update id="UpdateReplyCount">
+	update csm_freeboard set replycount = replycount+1
+	where bno=#{bno}
+	</update>
+	
+	<select id="SelectIp" resultType="String">
+	select ip from csm_freeboard where ip is not null
+	</select>
+	
+	<select id="IpCount" resultType="int">
+	select count(*) from csm_freeboard where ip=#{ip} and to_char(regdate, 'yyyy/mm/dd') = to_char(sysdate, 'yyyy/mm/dd')
+	</select>
+	
+</mapper>

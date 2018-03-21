@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.ReplyMapper">
+	
+	<select id="list" resultType="ReplyVO">
+	<!-- select * from csm_reply where bno=#{bno} order by rno desc -->
+	select * from
+	(select b.*, rownum brnum from 
+	(select A.*, rownum rnum from (select * from csm_reply where bgroup=#{bgroup}
+	order by bgroup desc)A order by rnum, indent desc)b
+	
+	
+	</select>
+	
+	<insert id="create">
+	insert into csm_reply (rno,bno,replytext,replyer,bgroup, typeboard)
+	values (csm_reply_seq.NEXTVAL,#{bno},#{replytext},#{replyer},csm_reply_seq.NEXTVAL, #{typeboard})
+	</insert>
+	
+	<update id="update">
+	update csm_reply set replytext = #{replytext}, updatedate = sysdate where rno = #{rno}
+	</update>
+	
+	<delete id="delete">
+	delete from csm_reply where rno=#{rno}
+	</delete>
+	
+	<select id="listPage" resultType="ReplyVO">
+	<!-- select * from
+	(select b.*, rownum brnum from 
+	(select A.*, rownum rnum from (select * from csm_reply where bno=#{bno}
+	order by bgroup desc, indent desc)A order by rnum desc)b)
+	where brnum between #{pm.start} and #{pm.end} -->
+	select * from (select A.*, rownum rnum from (select * from csm_reply 
+	where bno=#{vo.bno} and typeboard=#{vo.typeboard} order by bgroup desc,indent asc)A order by rnum) 
+	where rnum between #{pm.start} and 
+	#{pm.end}
+	
+	</select>
+	
+	<select id="count" resultType="int">
+	select count(bno) from csm_reply where bno=#{bno}
+	</select>
+	
+	<select id="getBno" resultType="int">
+	select bno from csm_reply where rno=#{rno}
+	</select>
+	
+	<update id="answerReply">
+	update csm_reply set indent = #{indent}+1 where bgroup = #{bgroup} and #{indent} > #{indent}
+	</update>
+	
+	<insert id="answerRegist">
+	insert into csm_reply (rno,bno,replytext,replyer,bgroup,indent)
+	values (csm_reply_seq.NEXTVAL,#{bno},#{replytext},#{replyer},#{bgroup},#{indent}+1)
+	</insert>
+</mapper>

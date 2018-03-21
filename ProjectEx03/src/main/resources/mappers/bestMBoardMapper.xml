@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csm.mapper.BestMBoardMapper">
+
+ <insert id="create">
+ insert into csm_bestmenu_board (bestm_bno, bestm_title, bestm_content, bestm_writer) 
+ values(csm_bestmenu_board_seq.nextval, #{bestm_title}, #{bestm_content}, #{bestm_writer})
+ </insert>
+
+<select id="read" resultType="com.csm.customer.domain.BestMVO">
+select 
+  bestm_bno, bestm_title, bestm_content, bestm_writer, bestm_regidate, answer
+ from 
+   csm_bestmenu_board 
+ where bestm_bno = #{bestm_bno}
+ </select>
+
+ <select id="getChatList" resultType="com.csm.customer.domain.BestMVO">
+SELECT * FROM chat WHERE chatTime > ? ORDER BY chatTime
+ </select>
+
+ <update id="update">
+ update csm_bestmenu_board set bestm_title =#{bestm_title}, answer =#{answer} 
+ where bestm_bno = #{bestm_bno}
+ </update>
+ 
+  <update id="answer">
+  update csm_bestmenu_board set answer ='Y' 
+ where bestm_bno = #{bestm_bno}
+ </update>
+ 
+
+ <delete id="delete">
+ delete from csm_bestmenu_board where bestm_bno = #{bestm_bno}
+ </delete>
+
+ <select id="listAll" resultType="com.csm.customer.domain.BestMVO">
+ <![CDATA[
+ select 
+   bestm_bno, bestm_title, bestm_content, bestm_writer, bestm_regidate, answer
+ from 
+   csm_bestmenu_board 
+ where bestm_bno > 0 
+ order by bestm_bno desc, bestm_regidate desc
+ ]]>  
+ </select>
+ <select id="listPage" resultType="com.csm.customer.domain.BestMVO">
+<include refid="pagingcrihead"></include>
+select bestm_bno, bestm_title, bestm_content, bestm_writer, bestm_regidate, answer
+from csm_bestmenu_board
+where bestm_bno > 0
+order by bestm_bno desc, bestm_regidate desc
+<include refid="pagingcrifoot"></include>
+ </select>
+ 
+ <select id="listCriteria" resultType="com.csm.customer.domain.BestMVO">
+<include refid="pagingHeader"/>
+select bestm_bno, bestm_title, bestm_content, bestm_writer, bestm_regidate, answer
+from  csm_bestmenu_board
+where bestm_bno > 0 
+order by bestm_bno desc, bestm_regidate desc
+<include refid="pagingFooter"/>
+ </select>
+<select id="countPaging" resultType="int">
+ <![CDATA[
+ select 
+   count(bestm_bno) 
+ from 
+   csm_bestmenu_board 
+ where 
+   bestm_bno > 0 
+ ]]>
+</select>
+<sql id="search">
+ <if test="searchType != null" > 
+   <if test="searchType == 't'.toString()">
+     and bestm_title like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'c'.toString()">
+     and bestm_content like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'w'.toString()">
+     and bestm_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>     
+   <if test="searchType == 'tc'.toString()">
+     and bestm_title like CONCAT(CONCAT('%', #{keyword}), '%') OR bestm_content like CCONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'cw'.toString()">
+     and bestm_content like CONCAT(CONCAT('%', #{keyword}), '%') OR bestm_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'tcw'.toString()">
+     and bestm_title like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             bestm_content like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             bestm_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>              
+ </if>  
+</sql>
+
+<select id="listSearchCount" resultType="int">
+<![CDATA[
+select
+   count(bestm_bno)
+from
+   csm_bestmenu_board
+where bestm_bno > 0
+]]>
+<include refid="search"/>
+</select>
+
+
+<select id="listSearch" resultType="com.csm.customer.domain.BestMVO">
+
+<include refid="pagingHeader"/>
+<![CDATA[
+select bestm_bno, bestm_title, bestm_content, bestm_writer, bestm_regidate, answer
+     FROM csm_bestmenu_board where 1=1
+]]>
+<include refid="search"/>
+<![CDATA[
+order by bestm_bno desc
+]]>
+<include refid="pagingFooter"/>
+</select>
+  <!-- include용 -->
+ <sql id="pagingcrihead">
+	select * from(
+	select A.*,rownum as rn from (
+	</sql>
+	
+	<sql id="pagingcrifoot">
+	) A
+)where rn between #{page} and 10
+</sql>
+<sql id="pagingHeader">
+		select * from(
+		select A.* , rownum as rn
+			from ( 
+	</sql>
+	<sql id="pagingFooter">
+		) A
+)where rn between #{startPage} and #{endPage}
+</sql>
+ 
+ </mapper>

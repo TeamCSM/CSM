@@ -1,0 +1,14 @@
+@CHARSET "UTF-8";
+
+
+.logout_table{
+	float: right;
+}
+
+li{
+	list-style: none;
+	display: inline;
+	margin-left: 1%;
+	margin-right: 1%;
+	
+}

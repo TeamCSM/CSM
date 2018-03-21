@@ -1,0 +1,114 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.QuestionboardMapper">
+	
+	<insert id="create">
+	insert into csm_questionboard (bno,question,title,content,writer,ip,bgroup,point)
+	values (csm_questionboard_seq.NEXTVAL,#{question},#{title},#{content},#{writer},#{ip},csm_questionboard_seq.NEXTVAL,#{point})
+	</insert>
+	
+	<select id="read" resultType="QuestionboardVO">
+	select *
+	from csm_questionboard where bno=#{bno}
+	</select>
+	
+	<update id="update">
+	update csm_questionboard set title=#{title},content=#{content}
+	where bno=#{bno}
+	</update>
+	
+	<delete id="delete">
+	delete from csm_questionboard where bno=#{bno} and bno=#{bgroup}
+	</delete>
+	
+	<select id="listPage" resultType="QuestionboardVO">
+
+	select * from
+	(select b.*, rownum brnum from 
+	(select A.*, rownum rnum from (select * from csm_questionboard where bno>0 
+
+	<include refid="search"></include>
+
+	order by bgroup asc, bstep desc)A where indent=0 order by rnum desc)b)
+	where brnum between #{start} and #{end}
+	</select>
+	
+	<select id="listCountPaging" resultType="int">
+	select count(bno) from csm_questionboard where bno>0 and indent=0
+	
+	<include refid="search"></include>
+	
+	</select>
+	
+	
+	<sql id="search">
+		<if test="searchType != null">
+			<if test="searchType == 'title'.toString()">
+			and title like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+			<if test="searchType == 'content'.toString()">
+			and content like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+			<if test="searchType == 'writer'.toString()">
+			and writer like CONCAT(CONCAT('%',#{keyword}),'%')
+			</if>
+		</if>
+	</sql>
+	
+	<update id="UpdateViewCount">
+	update csm_questionboard set viewcount = viewcount+1
+	where bno=#{bgroup}
+	</update>
+	
+	<update id="UpdateReplyCount">
+	update csm_questionboard set replycount = replycount+1
+	where bno=#{bgroup}
+	</update>
+	
+	<select id="SelectIp" resultType="String">
+	select ip from csm_questionboard where ip is not null
+	</select>
+	
+	<select id="IpCount" resultType="int">
+	select count(*) from csm_questionboard where ip=#{ip} and to_char(regdate, 'yyyy/mm/dd') = to_char(sysdate, 'yyyy/mm/dd')
+	</select>
+	
+	<update id="answer">
+	update csm_questionboard set bstep=#{bstep}+1
+	where bgroup=#{bgroup} and bstep>#{bstep}
+	</update>
+	
+	<insert id="answerRegist">
+	insert into csm_questionboard (bno,question,title,content,writer ,bgroup,bstep,indent)
+	values (csm_questionboard_seq.NEXTVAL,#{question},#{title},#{content},#{writer},#{bgroup},#{bstep}+1,1)
+	</insert>
+	
+	<select id="AnswerListPage" resultType="QuestionboardVO">
+
+	select * from
+	(select b.*, rownum brnum from 
+	(select A.*, rownum rnum from (select * from csm_questionboard where bno>0
+	order by bgroup asc, bstep desc)A order by rnum desc)b where bgroup=#{bgroup} and indent=1 order by likenum desc)
+	where brnum between #{start} and #{end} order by checkcount desc
+	</select>
+	
+	<select id="checkPoint" resultType="UserVO">
+	select user_point from csm_user_baseinfo where user_id=#{user_id} and user_point >= #{user_point}
+	</select>
+	
+	<update id="updateCheckCount">
+	update csm_questionboard set checkcount = checkcount+1
+	where writer=#{writer} and bno=#{bno}
+	</update>
+	
+	<update id="updateLikenum">
+	update csm_questionboard set likenum = likenum+1 where bno=#{bno} and writer=#{writer} and indent>0
+	</update>
+	
+	<select id="answerRead" resultType="QuestionboardVO">
+	select * from csm_questionboard where bno=#{bno} and writer=#{writer} and indent>0
+	</select>
+</mapper>

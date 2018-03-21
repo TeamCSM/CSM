@@ -1,0 +1,151 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csm.mapper.QnaBoardMapper">
+
+ <insert id="create">
+ insert into csm_qna_board (qna_bno, qna_title, qna_content, qna_writer) 
+ values(csm_qna_board_seq.nextval, #{qna_title}, #{qna_content}, #{qna_writer})
+ </insert>
+
+<select id="read" resultType="com.csm.customer.domain.QnaVO">
+select 
+  qna_bno, qna_title, qna_content, qna_writer, qna_regidate, qna_viewcnt
+ from 
+   csm_qna_board 
+ where qna_bno = #{qna_bno}
+ </select>
+
+ <update id="update">
+ update csm_qna_board set qna_title =#{qna_title}, qna_content =#{qna_content} 
+ where qna_bno = #{qna_bno}
+ </update>
+
+ <delete id="delete">
+ delete from csm_qna_board where qna_bno = #{qna_bno}
+ </delete>
+
+ <select id="listAll" resultType="com.csm.customer.domain.QnaVO">
+ <![CDATA[
+ select 
+   qna_bno, qna_title, qna_content, qna_writer, qna_regidate, qna_viewcnt
+ from 
+   csm_qna_board 
+ where qna_bno > 0 
+ order by qna_bno desc, qna_regidate desc
+ ]]>  
+ </select>
+
+<select id="listPage" resultType="com.csm.customer.domain.QnaVO">
+<include refid="pagingcrihead"></include>
+select qna_bno, qna_title, qna_content, qna_writer, qna_regidate, qna_viewcnt
+from csm_qna_board
+where qna_bno > 0
+order by qna_bno desc, qna_regidate desc
+<include refid="pagingcrifoot"></include>
+</select>
+
+<select id="listCriteria" resultType="com.csm.customer.domain.QnaVO">
+<include refid="pagingHeader"/>
+select qna_bno, qna_title, qna_content, qna_writer, qna_regidate, qna_viewcnt
+from  csm_qna_board
+where qna_bno > 0 
+order by qna_bno desc, qna_regidate desc
+<include refid="pagingFooter"/>
+ </select>
+
+<select id="countPaging" resultType="int">
+<![CDATA[
+select 
+  count(qna_bno) 
+from 
+  csm_qna_board 
+where 
+  qna_bno > 0 
+]]>
+</select>
+
+<sql id="search">
+ <if test="searchType != null" > 
+   <if test="searchType == 't'.toString()">
+     and qna_title like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'c'.toString()">
+     and qna_content like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>
+   <if test="searchType == 'w'.toString()">
+     and qna_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>     
+   <if test="searchType == 'tc'.toString()">
+     and qna_title like CONCAT(CONCAT('%', #{keyword}), '%') OR qna_content like CCONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'cw'.toString()">
+     and qna_content like CONCAT(CONCAT('%', #{keyword}), '%') OR qna_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>        
+   <if test="searchType == 'tcw'.toString()">
+     and qna_title like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             qna_content like CONCAT(CONCAT('%', #{keyword}), '%')
+           OR 
+             qna_writer like CONCAT(CONCAT('%', #{keyword}), '%')
+   </if>              
+ </if>  
+</sql>
+
+<select id="listSearchCount" resultType="int">
+<![CDATA[
+select
+   count(qna_bno)
+from
+   csm_qna_board
+where qna_bno > 0
+]]>
+<include refid="search"/>
+</select>
+
+<select id="listSearchCount2" resultType="int">
+<![CDATA[
+select
+   count(qna_bno)
+from
+   csm_qna_board
+where qna_bno > 0
+]]>
+<include refid="search"/>
+</select>
+
+<select id="listSearch" resultType="com.csm.customer.domain.QnaVO">
+
+<include refid="pagingHeader"/>
+<![CDATA[
+select qna_bno, qna_title, qna_content, qna_writer, qna_regidate, qna_viewcnt
+     FROM csm_qna_board where 1=1
+]]>
+<include refid="search"/>
+<![CDATA[
+order by qna_bno desc
+]]>
+<include refid="pagingFooter"/>
+</select>
+
+ <!-- include용 -->
+ <sql id="pagingcrihead">
+	select * from(
+	select A.*,rownum as rn from (
+</sql>
+	<sql id="pagingcrifoot">
+	) A
+)where rn between #{page} and 10
+</sql>
+<sql id="pagingHeader">
+		select * from(
+		select A.* , rownum as rn
+			from ( 
+	</sql>
+	<sql id="pagingFooter">
+		) A
+)where rn between #{startPage} and #{endPage}
+</sql>
+ </mapper>

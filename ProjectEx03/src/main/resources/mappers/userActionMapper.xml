@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+  
+<mapper namespace="com.csm.mapper.userActionMapper">
+	
+	<insert id="insertAction">
+		insert into csm_user_action (user_id,user_action,user_flag)
+		values (#{user_id},'check',1)
+	</insert>
+	
+	<select id="checkAction" resultType="int">
+		select count(*) from csm_user_action 
+		where user_id=#{user_id} and user_action='check' and user_flag=1 and to_char(action_regdate, 'yyyy/mm/dd') = to_char(sysdate, 'yyyy/mm/dd')
+	</select>
+	
+	<insert id="insertLike">
+		insert into csm_user_action (user_id,user_action,user_flag)
+		values (#{user_id},'like',#{user_flag})
+	</insert>
+	
+	<select id="likeAction" resultType="int">
+		select count(*) from csm_user_action
+		where user_id=#{user_id} and user_action='like' and user_flag=#{user_flag}
+	</select>
+	
+</mapper>

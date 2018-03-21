@@ -1,0 +1,11 @@
+@CHARSET "UTF-8";
+
+
+
+li{
+	list-style: none;
+	display: inline;
+	margin-left: 1%;
+	margin-right: 1%;
+	
+}

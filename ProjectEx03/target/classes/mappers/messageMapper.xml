@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.csm.mapper.MessageMapper">
+
+<insert id="create">
+insert into csm_message (messagenum, title, content, regidate, senderid, receiverid) 
+values(csm_message_seq.nextval, #{title}, #{content}, sysdate, #{senderid}, #{receiverid})
+</insert>
+
+<insert id="receiveReadCheck">
+UPDATE csm_message SET receiverChecks = 1 WHERE messagenum = #{messagenum}
+</insert>
+
+<select id="read" resultType="LoginDTO">
+select 
+user_id,
+user_name
+from 
+CSM_USER_BASEINFO
+where user_id = #{user_id}
+ </select>
+<delete id="delete">
+ delete from csm_message where messagenum = #{messagenum}
+ </delete>
+
+<select id="userCheck" resultType="int"> 
+select count(*)
+from csm_user_baseinfo
+where user_id = #{receiverid}
+</select>
+
+<select id="readMessage" resultType="messageVO">
+<![CDATA[
+select
+messagenum,
+title,
+senderid,
+receiverid,
+content,
+regidate,
+receiverchecks
+from csm_message
+where messagenum = #{messagenum}
+]]>
+</select>
+
+ <select id="myMessage" resultType="messageVO">
+ <![CDATA[
+select * from csm_message where senderid = #{user_id}
+ ]]>
+ </select> 
+  <select id="yourMessage" resultType="messageVO">
+ <![CDATA[
+select * from csm_message where receiverid = #{user_id}
+ ]]>  
+ </select> 
+
+ <!-- 매칭용 인서트문 -->
+ <insert id="matching">
+ 	insert into csm_message (messagenum, title, senderid, receiverid, content) values (csm_message_seq.nextval, #{title}||' 게시글입니다.', #{sid}, #{id}, '연락주세요.')
+ </insert> 
+
+
+</mapper>
